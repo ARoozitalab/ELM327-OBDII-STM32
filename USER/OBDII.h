@@ -39,6 +39,12 @@
 #define RSP_ERROR					0
 #define TURE_RSP	 				1
 
+//PC13 ----- ISO K
+//PA9  ----- ISO L _ SEND
+//PA10  ----- ISO L _ RCV
+
+
+
 #define OBD_RSP_TIME_OUT_ecu	5000
 extern uint16_t init_obd;
 
