@@ -29,13 +29,13 @@
 
 
 
-char send_cmd_obd=0;
-char init_obd_port=0;
-char k_cmd4[30]={0};
+uint8_t send_cmd_obd=0;
+uint8_t init_obd_port=0;
+uint8_t k_cmd4[30]={0};
 char msg_log[500]={0};
 int msg_size=0;
-char size_obd=0;
-char obd_send_flag=0;
+uint8_t size_obd=0;
+uint8_t obd_send_flag=0;
 
 
 
@@ -59,10 +59,10 @@ for(i=0;i<0x1fffff;i++);
 void OBD_Task(void * pvArg)
 	{
 
-  char k_cmd[20];
-	char k_cmd2[30];
+  uint8_t k_cmd[20];
+	uint8_t k_cmd2[30];
 	char bl_cmd2[30];
-	char obd_sz=0;
+	uint8_t obd_sz=0;
 	int i,j=0;
 	OBD_Serial_Init();
 	
@@ -74,8 +74,9 @@ void OBD_Task(void * pvArg)
 		
 	if(obd_send_flag)	
 	 {		 
-		K_line_send(k_cmd4,(size_obd/3)+1);
-		obd_send_flag=0;
+		 obd_sz=0;
+		 OBD_Send_Recive(k_cmd4,(size_obd/3)+1,k_cmd2,&obd_sz);
+		 obd_send_flag=0;
 		 size_obd=0;
 	 }
 	else if(init_obd_port==1)
@@ -84,19 +85,14 @@ void OBD_Task(void * pvArg)
 		{
 			OBD_ecu_Init();
 			k_cmd[0]=0x81;
-			K_line_send(k_cmd,1);
-			delay();
-			K_line_RCV(k_cmd2,&obd_sz);	
+			OBD_Send_Recive(k_cmd,1,k_cmd2,&obd_sz);
+
 		}
 		init_obd_port=2;
 		BL_Send(deviceId,16,"\r\rELM327 v2.1\r\r>");
 	}
 
 	
-	
-	
-	obd_sz=0;
-  K_line_RCV(k_cmd2,&obd_sz);
 		if(send_cmd_obd==1)
 			j++;
 		if(obd_sz!=0)
@@ -132,11 +128,7 @@ void OBD_Task(void * pvArg)
 			k_cmd[1]=0x00;
 			if(obd_sz==0)
 			{	
-		  K_line_send(k_cmd,2);
-			while(obd_sz!=6)
-			{
-			K_line_RCV(k_cmd2,&obd_sz);					
-			}
+			OBD_Send_Recive(k_cmd,2,k_cmd2,&obd_sz);
 			obd_sz=0;
 			for(i=0;i<30;i++)
 			k_cmd2[i]=0;

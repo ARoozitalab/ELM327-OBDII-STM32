@@ -19,4 +19,4 @@
 
 uint8_t hexStringToBytes(char *inhex);
 
-void bytesToHexString(uint8_t *bytesin,uint8_t hex);
+void bytesToHexString(char *bytesin,uint8_t hex);

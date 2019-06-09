@@ -47,7 +47,7 @@ uint8_t hexStringToBytes(char *inhex)
 * Output         : None
 * Return         : None 
 *******************************************************************************/	
-void bytesToHexString(uint8_t *bytesin,uint8_t hex)
+void bytesToHexString(char *bytesin,uint8_t hex)
 {
 	uint8_t value1=0,value2=0;
 	

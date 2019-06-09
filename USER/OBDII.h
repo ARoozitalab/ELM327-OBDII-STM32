@@ -49,21 +49,23 @@
 extern uint16_t init_obd;
 
 extern uint8_t obd_data[obd_size_buf];
-extern char obd_count;
-extern char OBD_RCV_T;	 
+extern uint8_t obd_count;
+extern uint8_t OBD_RCV_T;	 
 	 
-void K_line_RCV(char *rsp,char *size);	
+void K_line_RCV(uint8_t *rsp,uint8_t *size);	
 void K_line_fast_init(void);
 void K_line_slow_init(void);
-void K_line_send(char *rsp,char size);
+void K_line_send(uint8_t *rsp,uint8_t size);
 void OBD_Serial_Init(void);
 void bus_off(void);	 
-uint8_t OBD_Send_Recive_ecu(char *send_buf,char send_buf_s,char *rcv_buf,char *rcv_buf_s );
+uint8_t OBD_Send_Recive_ecu(uint8_t *send_buf,uint8_t send_buf_s,uint8_t *rcv_buf,uint8_t *rcv_buf_s );
 void OBD_ecu_Init(void);
-uint8_t can_send(uint16_t id , uint8_t data_l,char *data);
-uint8_t can_rcv(uint8_t *data_l,char *data)	;
+uint8_t can_send(uint16_t id , uint8_t data_l,uint8_t *data);
+uint8_t can_rcv(uint8_t *data_l,uint8_t *data)	;
+uint8_t OBD_Send_Recive(uint8_t *send_buf,uint8_t send_buf_s,uint8_t *rcv_buf,uint8_t *rcv_buf_s );
 #ifdef __cplusplus
 }
 #endif
 
 #endif
+

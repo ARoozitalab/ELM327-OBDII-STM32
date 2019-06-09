@@ -24,8 +24,8 @@ uint8_t obd_data[obd_size_buf]=
 	{
 	0
 	};
-char obd_count=0;
-char OBD_RCV_T=0;	
+uint8_t obd_count=0;
+uint8_t OBD_RCV_T=0;	
 	
 	
 	
@@ -39,7 +39,7 @@ char OBD_RCV_T=0;
 * Return         : None
 *******************************************************************************/			
 	
-uint8_t can_send(uint16_t id , uint8_t data_l,char *data)	
+uint8_t can_send(uint16_t id , uint8_t data_l,uint8_t *data)	
 {
 	uint8_t a;
 		uint8_t t_out=0;
@@ -86,7 +86,7 @@ uint8_t can_send(uint16_t id , uint8_t data_l,char *data)
 * Return         : None
 *******************************************************************************/	
 
-uint8_t can_rcv(uint8_t *data_l,char *data)	
+uint8_t can_rcv(uint8_t *data_l,uint8_t *data)	
 {
 		uint8_t t_out=0;
 			uint8_t i=0;
@@ -97,7 +97,7 @@ while((!c_rcv_flag)&&(t_out<100))
 }
 if (t_out==100)
 	return 0 ;
-if((c_dt[1]==0x41))
+if(c_dt[1]==0x41)
 {
 for(i=1;i<=c_dt[0];i++)
 	{
@@ -130,7 +130,7 @@ for(i=1;i<=c_dt[0];i++)
 * Return         : None
 *******************************************************************************/		
 	
-void K_line_RCV(char *rsp,char *size)	
+void K_line_RCV(uint8_t *rsp,uint8_t *size)	
 {
 	uint32_t timeout=0;
 	int i=0;
@@ -180,10 +180,10 @@ void K_line_RCV(char *rsp,char *size)
 * Output         : None
 * Return         : None
 *******************************************************************************/		
-void K_line_send(char *rsp,char size)
+void K_line_send(uint8_t *rsp,uint8_t size)
 {
 	int i=0;
-	char crc=0;
+	uint8_t crc=0;
 		OBD_RCV_T=0;
 	
 	while(!dif_count_obd());
@@ -381,13 +381,13 @@ uint16_t temp=0;
 void OBD_ecu_Init(void)
 {
 	uint8_t size_R=0;	
-	char Data1[2]={0x1,0x0c};	
-	char Data2[4]={0,0,0,0};
-		char Data3[8]={2,1,0,0,0,0,0,0};
-		char Data4[8]={2,1,0x46,0,0,0,0,0};
-		char Data5[8]={0,0,0,0,0,0,0,0};
-	char test_ecu=0;		
-	char init=0;
+	uint8_t Data1[2]={0x1,0x0c};	
+	uint8_t Data2[4]={0,0,0,0};
+		uint8_t Data3[8]={2,1,0,0,0,0,0,0};
+		uint8_t Data4[8]={2,1,0x46,0,0,0,0,0};
+		uint8_t Data5[8]={0,0,0,0,0,0,0,0};
+	uint8_t test_ecu=0;		
+	uint8_t init=0;
 		while(init==0)
 		{
 			vTaskDelay(5000);
@@ -462,11 +462,11 @@ void OBD_ecu_Init(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/	
-uint8_t OBD_Send_Recive_ecu(char *send_buf,char send_buf_s,char *rcv_buf,char *rcv_buf_s )
+uint8_t OBD_Send_Recive_ecu(uint8_t *send_buf,uint8_t send_buf_s,uint8_t *rcv_buf,uint8_t *rcv_buf_s )
 	{
 	
-			uint16_t time_R=0;
-			static char ecu_fail=0;
+			uint32_t time_R=0;
+			static uint8_t ecu_fail=0;
 		
 			K_line_send(send_buf,send_buf_s);
 		while(((!obd_count)&(time_R<OBD_RSP_TIME_OUT_ecu))|(!dif_count_obd()))
@@ -489,7 +489,84 @@ uint8_t OBD_Send_Recive_ecu(char *send_buf,char send_buf_s,char *rcv_buf,char *r
 	}
 
 	
-	////////////////////////////////////////////////////	
+/*******************************************************************************
+* Function Name  : OBD_Send_Recive
+* Description    : send and Recive OBDII data high layer
+* Input          : send_buf,send_buf_s,rcv_buf,rcv_buf_s
+* Output         : None
+* Return         : None
+*******************************************************************************/	
+	
+uint8_t OBD_Send_Recive(uint8_t *send_buf,uint8_t send_buf_s,uint8_t *rcv_buf,uint8_t *rcv_buf_s )
+	{
+	
+			uint32_t time_R=0;
+			static uint8_t ecu_fail=0;
+		uint8_t c_data[8]={0,0,0,0,0,0,0,0};
+			uint8_t i=0;
+		if(flasg_t==KWP_Flag)
+		{
+			K_line_send(send_buf,send_buf_s);
+		while(((!obd_count)&(time_R<OBD_RSP_TIME_OUT))|(!dif_count_obd()))
+		{
+			vTaskDelay(1);
+			time_R++;
+		}
+		if(time_R==OBD_RSP_TIME_OUT)
+		{		
+			ecu_fail++;
+			if(ecu_fail>10)
+			{
+			obd_turn_on=0;
+			OBD_ecu_Init();	
+			}
+			return TIME_OUT_ERROR;
+
+		}
+				
+	ecu_fail=0;	
+	K_line_RCV(rcv_buf,&rcv_buf_s[0]);			
+	}
+	else if(flasg_t==CAN_Flag)	
+	{
+		c_data[0]=send_buf_s;
+		for(i=1;i<=(1+send_buf_s);i++)
+		c_data[i]=send_buf[i-1];
+		
+		if(can_send(0x7df , 8,c_data))
+		{
+			can_rcv(&rcv_buf_s[0],rcv_buf);
+		
+				ecu_fail=0;
+		}
+		else{
+			ecu_fail++;
+			if(ecu_fail>15)
+			{
+			obd_turn_on=0;
+			OBD_ecu_Init();	
+			}
+			
+			
+		}
+		
+		
+		
+	}
+	
+	
+	
+	if(rcv_buf[0]==0X7F)
+	return RSP_ERROR;
+	
+	return TURE_RSP;	
+	}
+	
+	
+	
+	
+	
+	
 	
 /*******************************************************************************
 * Function Name  : OBD_Serial_Init
